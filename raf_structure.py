@@ -97,9 +97,6 @@ class Raf:
             for filename in filenames:
                 file_path = os.path.join(dirname, filename)
                 raf_path = re.sub(base_path + '/', '', file_path)
-                # Files in the root path will be skipped
-                if not '/' in raf_path:
-                    continue
                 compress = True
                 extension = os.path.splitext(raf_path)[1].lower()
                 if extension == ".gfx" or extension == ".fsb" or extension == ".fev":

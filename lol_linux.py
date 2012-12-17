@@ -23,13 +23,13 @@ def apply_patch(path, rlsm_file, filearchives):
             if not file_info:
                 print("File not found in releasemanifest, patch could not be applied.")
                 exit(1)
+            version_dir = os.path.join(path, 'filearchives', int_to_ver(file_info.version), 'raf_archive')
             if not file_info.version in needed_versions:
                 needed_versions.append(file_info.version)
-                version_dir = os.path.join(path, 'filearchives', int_to_ver(file_info.version))
                 raf_file = raf.Raf(filearchives[file_info.version])
                 raf_file.read()
                 raf_file.unpack(version_dir)
-            shutil.copyfile(file_path, os.path.join(path, 'filearchives', int_to_ver(file_info.version), raf_path))
+            shutil.copyfile(file_path, os.path.join(version_dir, raf_path))
             #print(file_path)
             #print(os.path.join(path, 'filearchives', int_to_ver(file_info.version), raf_path))
 
@@ -51,15 +51,25 @@ def apply_patch(path, rlsm_file, filearchives):
         version_dir = os.path.join(path, 'filearchives', int_to_ver(version))
         file_name = os.path.split(filearchives[version])[1]
         new_raf = raf.Raf(os.path.join(version_dir, file_name))
-        new_raf.make_from_dirtree(version_dir, rlsm_file)
+        new_raf.make_from_dirtree(os.path.join(version_dir, 'raf_archive'), rlsm_file)
         new_raf.save()
+
+    print('Checking New Archives, please wait...')
+    for version in needed_versions:
+        version_dir = os.path.join(path, 'filearchives', int_to_ver(version))
+        file_name = os.path.split(filearchives[version])[1]
+        new_file = os.path.join(version_dir, file_name)
+        
+        if os.path.getsize(new_file) != os.path.getsize(filearchives[version]):
+            print(new_file, 'size does not match the original one!')
+            exit(1)
 
     print('Moving Archives, please wait...')
     for version in needed_versions:
         version_dir = os.path.join(path, 'filearchives', int_to_ver(version))
         file_name = os.path.split(filearchives[version])[1]
         new_file = os.path.join(version_dir, file_name)
-        
+
         os.remove(filearchives[version])
         os.remove(filearchives[version] + '.dat')
         shutil.move(new_file, filearchives[version])
