@@ -64,6 +64,22 @@ def apply_patch(path, rlsm_file, filearchives):
             print(new_file, 'size does not match the original one!')
             exit(1)
 
+        test_1 = raf.Raf(new_file)
+        test_2 = raf.Raf(filearchives[version])
+        test_1.read()
+        test_2.read()
+
+        for i in range(0, len(test_1.files)):
+            if test_1.files[i].p_hash != test_2.files[i].p_hash:
+                print('Wrong Hash:', test_1.files[i], test_2.files[i])
+                exit(1)
+            if test_1.paths[test_1.files[i].p_index].string != test_2.paths[test_2.files[i].p_index].string:
+                print('Wrong Path:', test_1.paths[test_1.files[i].p_index].string, test_2.paths[test_2.files[i].p_index].string)
+                exit(1)
+
+        del test_1
+        del test_2
+
     print('Moving Archives, please wait...')
     for version in needed_versions:
         version_dir = os.path.join(path, 'filearchives', int_to_ver(version))
@@ -103,9 +119,9 @@ if sys.argv[1] == 'texture_patch':
     filearchives = get_filearchives(lol_path)
     apply_patch(os.path.join(tmp_dir, 'texture_patch'), rlsm_file, filearchives)
 elif sys.argv[1] == 'repair':
-    pass
+    print("Not Yet Implemented")
 elif sys.argv[1] == 'info':
-    pass
+    print("Not Yet Implemented")
 else:
     print(sys.argv[1], 'is not a valid command.')
 

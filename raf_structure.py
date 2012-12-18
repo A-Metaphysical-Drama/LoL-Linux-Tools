@@ -218,7 +218,7 @@ class Raf:
         self.header += self.pack_uint32(self.plist_offset)
 
     def make_flist(self):
-        self.files.sort(key=lambda f: f.p_hash)
+        self.files.sort(key=lambda f: (f.p_hash, self.paths[f.p_index].string))
 
         self.file_entries = len(self.files)
         self.flist += self.pack_uint32(self.file_entries)
