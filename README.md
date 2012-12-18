@@ -21,8 +21,11 @@ From the application directory run:
     $ ./lol_linux.py command
 
 The available commands are:
+
 1. texture_patch - Patches League of Legend with non-mipmapped textures, this will fix game crashing at the Item Shop opening. Makes a backup of the edited files in the ./backups directory
+
 2. repair - This will check game files for corrupted (Or modified) ones, repairing is not yet implemented
+
 3. info - This will print some informations about the game version and so on - It's not yet implemented
 
 Note: League of Legends Linux Tools is made for *Python 3* but should work in Python 2 as well
