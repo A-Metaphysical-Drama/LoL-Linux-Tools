@@ -5,6 +5,7 @@ import re
 import sys
 import shutil
 import tarfile
+import hashlib
 import datetime
 from config import * 
 from functions import *
@@ -95,6 +96,27 @@ def apply_patch(path, rlsm_file, filearchives):
     shutil.rmtree(tmp_dir)
     print('Patch applied Successfully!')
 
+def check_md5(rlsm_file, filearchives):
+    rlsm_file.make_file_tree()
+    raf_archives = {}
+    bad_files = []
+
+    for f in rlsm_file.file_tree:
+        if (f.is_archived()):
+            #print('Checking:', f.path)
+            if not f.version in raf_archives:
+                if not f.version in filearchives:
+                    print(f)
+                    continue
+                raf_archives[f.version] = raf.Raf(filearchives[f.version])
+                raf_archives[f.version].read()
+            check = raf_archives[f.version].check_file_md5(f.path, f.md5)
+            if not check:
+                print('Bad File:', f.path)
+                bad_files.append(f)
+
+    return bad_files
+
 print('League of Legends - Linux Tools')
 
 # Checking for LoL dir
@@ -119,7 +141,11 @@ if sys.argv[1] == 'texture_patch':
     filearchives = get_filearchives(lol_path)
     apply_patch(os.path.join(tmp_dir, 'texture_patch'), rlsm_file, filearchives)
 elif sys.argv[1] == 'repair':
-    print("Not Yet Implemented")
+    rlsm_file = rlsm.RLSM(get_last_releasemanifest(lol_path))
+    filearchives = get_filearchives(lol_path)
+    print('Checking Files...')
+    check_md5(rlsm_file, filearchives)
+    print('Archive repair not yet implemented.')
 elif sys.argv[1] == 'info':
     print("Not Yet Implemented")
 else:

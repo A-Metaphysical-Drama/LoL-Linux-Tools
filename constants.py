@@ -8,7 +8,7 @@ RLSM_HEAD  = b'\x52\x4c\x53\x4d'
 RLSM_MAGIC = b'\x01\x00\x01\x00'
 
 # Buffer for reading/writing
-BUFFER_LEN = 4096
+BUFFER_LEN = 32768
 
 # Directories
 import os

@@ -180,6 +180,14 @@ class Raf:
             k = int((k_min+k_max)/2)
         """
 
+    def check_file_md5(self, path, md5):
+        res = self.find_file(path)
+        if res:
+            file_md5 = self.data_file.get_file_md5(res.offset, res.size)
+            return file_md5 == md5
+        else:
+            return False
+
     def pack_uint32(self, uint):
         return struct.pack(b'<I', uint)
 
@@ -295,20 +303,29 @@ class RafData:
 
         data = b''
         self.file.seek(offset)
-        decompobj = None
+        compressed = False
         if self.file.read(2) == ZLIB_HEAD:
-            decompobj = zlib.decompressobj()
+            compressed = True
+        #decompobj = None
+        #if self.file.read(2) == ZLIB_HEAD:
+        #    decompobj = zlib.decompressobj()
         self.file.seek(offset)
 
-        while size > 0:
-            if decompobj:
-                data += decompobj.decompress(self.file.read(min(BUFFER_LEN, size)))
-            else:
-                data += self.file.read(min(BUFFER_LEN, size))
-            size -= BUFFER_LEN
+        # This is not so good, but it's a LOT faster
+        if compressed:
+            data = zlib.decompress(self.file.read(size))
+        else:
+            data = self.file.read(size)
 
-        if decompobj:
-            data += decompobj.flush()
+        #while size > 0:
+        #    if decompobj:
+        #        data += decompobj.decompress(self.file.read(min(BUFFER_LEN, size)))
+        #    else:
+        #        data += self.file.read(min(BUFFER_LEN, size))
+        #    size -= BUFFER_LEN
+
+        #if decompobj:
+        #    data += decompobj.flush()
 
         return data
 

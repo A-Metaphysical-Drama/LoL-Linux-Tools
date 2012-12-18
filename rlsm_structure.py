@@ -40,8 +40,13 @@ class File:
         self.compressed_size = compressed_size
         self.unk = unk # 0x?? 0x?? 0x?? 0x?? 0x?? 0x?? 0xcd 0x01
 
+        self.path = ''
+
     def is_compressed(self):
         return self.flags & 0x10
+
+    def is_archived(self):
+        return self.flags & 0x02
 
     def __str__(self):
         return " File:" + \
@@ -51,7 +56,8 @@ class File:
              "\n         flags: " + bin(self.flags) + \
              "\n          Size: " + str(self.size) + \
              "\n   Compr. Size: " + str(self.compressed_size) + \
-             "\n           unk: " + str(binascii.b2a_hex(self.unk))
+             "\n           unk: " + str(binascii.b2a_hex(self.unk)) + \
+             "\n          Path: " + self.path
 
 class RLSM:
     def __init__(self, path):
@@ -83,26 +89,31 @@ class RLSM:
         self.string_count = self.read_uint32()
         self.string_size = self.read_uint32()
         self.strings = []
-        
+
+        # File Tree
+        self.file_tree = []
+
         for k in range(0, self.string_count):
             self.strings.append(self.read_string())
             #print(self.strings[k])
 
-    def print_subdirs(self, index, path):
+    def make_file_tree(self, index=0, path=''):
         if self.dirs[index].subdir_index == 0:
-            print(path + self.strings[self.dirs[index].name_index])
+            #print(path + self.strings[self.dirs[index].name_index])
             return
         for k in range(0, self.dirs[index].subdir_count):
             string_index = self.dirs[self.dirs[index].subdir_index + k].name_index
             sdir_path = path + '/' + self.strings[string_index]
-            print(sdir_path)
-            self.print_subdirs(self.dirs[index].subdir_index + k, sdir_path)
-        self.print_files(index, path)
+            #print(sdir_path)
+            self.make_file_tree(self.dirs[index].subdir_index + k, sdir_path)
+        self.add_files_to_tree(index, path)
 
-    def print_files(self, index, path):
+    def add_files_to_tree(self, index, path):
         for k in range(0, self.dirs[index].file_count):
             file = self.files[self.dirs[index].file_index + k]
-            print(path + '/' + self.strings[file.name_index])
+            self.file_tree.append(file)
+            self.file_tree[-1].path = (path + '/' + self.strings[file.name_index])[1:]
+            #print(path + '/' + self.strings[file.name_index])
             #if file.flags & (0x01 + 0x00):
             #if not file.flags & (0x02 + 0x00):
             #if file.flags != 5:
