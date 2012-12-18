@@ -18,7 +18,7 @@ Usage
 ------------------------
 From the application directory run:
 
-    ./lol_linux.py command
+    $ ./lol_linux.py command
 
 The available commands are:
 1. texture_patch - Patches League of Legend with non-mipmapped textures, this will fix game crashing at the Item Shop opening. Makes a backup of the edited files in the ./backups directory
