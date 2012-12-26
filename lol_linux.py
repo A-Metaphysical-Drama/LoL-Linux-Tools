@@ -137,7 +137,8 @@ print('League of Legends - Linux Tools')
 
 # Checking for LoL dir
 files = os.listdir(lol_path)
-if not 'RADS' in files:
+files = [x.lower() for x in files]
+if not 'rads' in files:
     print('"' + lol_path + '"', 'is not a valid League of Legends path, please edit config.py file!')
     exit(1)
 
