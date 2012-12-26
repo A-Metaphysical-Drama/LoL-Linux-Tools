@@ -20,3 +20,5 @@
 # Path to League of Legends Directory
 lol_path = './'
 
+# Enable threading for archive unpacking
+enable_threading = False

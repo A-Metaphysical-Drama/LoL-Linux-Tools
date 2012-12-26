@@ -23,15 +23,37 @@ import shutil
 import tarfile
 import hashlib
 import datetime
+import threading
 from config import * 
 from functions import *
 from constants import *
 import rlsm_structure as rlsm
 import raf_structure as raf
 
+class ThreadedUnpack(threading.Thread):
+    def __init__(self, raf_file, directory):
+        threading.Thread.__init__(self)
+        self.raf_file = raf_file
+        self.directory = directory
+
+    def run(self):
+        self.raf_file.unpack(self.directory)
+
+class ThreadedPack(threading.Thread):
+    def __init__(self, raf_file, rlsm_file, directory):
+        threading.Thread.__init__(self)
+        self.raf_file = raf_file
+        self.rlsm_file = rlsm_file
+        self.directory = directory
+
+    def run(self):
+        self.raf_file.make_from_dirtree(self.directory, self.rlsm_file)
+        self.raf_file.save()
+
 def apply_patch(path, rlsm_file, filearchives):
     needed_versions = []
     print('Unpacking Archives, please wait...')
+    threads = []
     for dirname, dirnames, filenames in os.walk(os.path.join(path, 'DATA')):
         for filename in filenames:
             file_path = os.path.join(dirname, filename)
@@ -45,10 +67,16 @@ def apply_patch(path, rlsm_file, filearchives):
                 needed_versions.append(file_info.version)
                 raf_file = raf.Raf(filearchives[file_info.version])
                 raf_file.read()
-                raf_file.unpack(version_dir)
-            shutil.copyfile(file_path, os.path.join(version_dir, raf_path))
+                if enable_threading:
+                    t = ThreadedUnpack(raf_file, version_dir)
+                    threads.append(t)
+                    t.start()
+                else:
+                    raf_file.unpack(version_dir)
             #print(file_path)
             #print(os.path.join(path, 'filearchives', int_to_ver(file_info.version), raf_path))
+
+    [t.join() for t in threads]
 
     print('Saving Backups, please wait...')
     timestamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
@@ -63,13 +91,33 @@ def apply_patch(path, rlsm_file, filearchives):
         shutil.copyfile(filearchives[version], backup_file)
         shutil.copyfile(filearchives[version] + '.dat', backup_file + '.dat')
 
+    print('Replacing Files, please wait...')
+    for dirname, dirnames, filenames in os.walk(os.path.join(path, 'DATA')):
+        for filename in filenames:
+            file_path = os.path.join(dirname, filename)
+            raf_path = re.sub(path + '/', '', file_path)
+            file_info = rlsm_file.find_file(raf_path)
+            if not file_info:
+                print("File not found in releasemanifest, patch could not be applied.")
+                exit(1)
+            version_dir = os.path.join(path, 'filearchives', int_to_ver(file_info.version), 'raf_archive')
+            shutil.copyfile(file_path, os.path.join(version_dir, raf_path))
+
     print('Repacking Archives, please wait...')
+    threads = []
     for version in needed_versions:
         version_dir = os.path.join(path, 'filearchives', int_to_ver(version))
         file_name = os.path.split(filearchives[version])[1]
         new_raf = raf.Raf(os.path.join(version_dir, file_name))
-        new_raf.make_from_dirtree(os.path.join(version_dir, 'raf_archive'), rlsm_file)
-        new_raf.save()
+        if enable_threading:
+            t = ThreadedPack(new_raf, rlsm_file, os.path.join(version_dir, 'raf_archive'))
+            threads.append(t)
+            t.start()
+        else:
+            new_raf.make_from_dirtree(os.path.join(version_dir, 'raf_archive'), rlsm_file)
+            new_raf.save()
+
+    [t.join() for t in threads]
 
     print('Checking New Archives, please wait...')
     for version in needed_versions:
