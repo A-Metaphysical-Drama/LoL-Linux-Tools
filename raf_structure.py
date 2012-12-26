@@ -287,7 +287,7 @@ class RafData:
 
     def add_file(self, path, compress):
         if not self.write:
-            print('RafData si in read only mode.')
+            print('RafData is in read only mode.')
             exit(1)
 
         f = open(path, 'rb')
@@ -314,7 +314,7 @@ class RafData:
 
     def get_file(self, offset, size):
         if self.write:
-            print('RafData si in write only mode.')
+            print('RafData is in write only mode.')
             exit(1)
 
         data = b''
@@ -347,7 +347,7 @@ class RafData:
 
     def extract_file(self, offset, size, path):
         if self.write:
-            print('RafData si in write only mode.')
+            print('RafData is in write only mode.')
             exit(1)
 
         out = open(path, 'wb')
