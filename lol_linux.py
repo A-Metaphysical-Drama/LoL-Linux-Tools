@@ -30,6 +30,15 @@ from constants import *
 import rlsm_structure as rlsm
 import raf_structure as raf
 
+def print_usage():
+    print('Usage:', sys.argv[0], "command [args]")
+    print('  Commands:')
+    print('    texture_patch        - Patches LoL with non mipmapped item textures')
+    print('    repair               - Checks filearchives and repairs corrupted files')
+    print('    search <string>      - Searches Releasemanifest for files matching <string>')
+    print('    info                 - Prints various informations')
+    exit(1)
+
 class ThreadedUnpack(threading.Thread):
     def __init__(self, raf_file, directory):
         threading.Thread.__init__(self)
@@ -190,13 +199,8 @@ if not 'rads' in files:
     print('"' + lol_path + '"', 'is not a valid League of Legends path, please edit config.py file!')
     exit(1)
 
-if len(sys.argv) != 2:
-    print('Usage:', sys.argv[0], "command")
-    print('  Commands:')
-    print('    texture_patch        - Patches LoL with non mipmapped item textures')
-    print('    repair               - Checks filearchives and repairs corrupted files')
-    print('    info                 - Prints various informations')
-    exit(1)
+if len(sys.argv) < 2:
+    print_usage()
 
 if sys.argv[1] == 'texture_patch':
     data_url = 'http://www.darkwind.it/misc/DATA.tar.gz'
@@ -211,6 +215,13 @@ elif sys.argv[1] == 'repair':
     print('Checking Files...')
     check_md5(rlsm_file, filearchives)
     print('Archive repair not yet implemented.')
+elif sys.argv[1] == 'search':
+    if len(sys.argv) != 3:
+        print_usage()
+    rlsm_file = rlsm.RLSM(get_last_releasemanifest(lol_path))
+    files = rlsm_file.match_file(sys.argv[2])
+    for i in files:
+        print(i)
 elif sys.argv[1] == 'info':
     print("Not Yet Implemented")
 else:

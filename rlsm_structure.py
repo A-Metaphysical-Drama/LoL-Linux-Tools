@@ -168,6 +168,17 @@ class RLSM:
                 #print("Could not find File:", path)
                 return None
 
+    def match_file(self, name):
+        matched = []
+        if not self.file_tree:
+            self.make_file_tree()
+
+        for f in self.file_tree:
+            if f.path.find(name) >= 0:
+                matched.append(f)
+
+        return matched
+
     def read_uint32(self):
         if not self.file:
             return 0
