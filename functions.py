@@ -49,7 +49,11 @@ def string_hash(str):
 
 def get_filearchives(path):
     filearchives = {}
-    path = os.path.join(path, 'RADS', 'projects', 'lol_game_client', 'filearchives')
+    for f in os.listdir(path):
+        if f.lower() == "rads":
+            rads_dir = f
+            break
+    path = os.path.join(path, rads_dir, 'projects', 'lol_game_client', 'filearchives')
     versions = os.listdir(path)
     for version in versions:
         version_int = ver_to_int(version)
@@ -62,7 +66,11 @@ def get_filearchives(path):
     return filearchives
 
 def get_last_releasemanifest(path):
-    path = os.path.join(path, 'RADS', 'projects', 'lol_game_client', 'releases')
+    for f in os.listdir(path):
+        if f.lower() == "rads":
+            rads_dir = f
+            break
+    path = os.path.join(path, rads_dir, 'projects', 'lol_game_client', 'releases')
     versions = os.listdir(path)
     max_version = 0
     for version in versions:
