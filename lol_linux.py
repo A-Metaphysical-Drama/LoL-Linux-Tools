@@ -36,6 +36,7 @@ def print_usage():
     print('    texture_patch        - Patches LoL with non mipmapped item textures')
     print('    repair               - Checks filearchives and repairs corrupted files')
     print('    search <string>      - Searches Releasemanifest for files matching <string>')
+    print('    extract <string>     - Extracts files matching <string>')
     print('    info                 - Prints various informations')
     exit(1)
 
@@ -69,7 +70,7 @@ def apply_patch(path, rlsm_file, filearchives):
             raf_path = re.sub(path + '/', '', file_path)
             file_info = rlsm_file.find_file(raf_path)
             if not file_info:
-                print("File not found in releasemanifest, patch could not be applied.")
+                print("File '" + raf_path + "' not found in releasemanifest, patch could not be applied.")
                 exit(1)
             version_dir = os.path.join(path, 'filearchives', int_to_ver(file_info.version), 'raf_archive')
             if not file_info.version in needed_versions:
@@ -190,6 +191,51 @@ def check_md5(rlsm_file, filearchives):
 
     return bad_files
 
+def extract(base_path, needle):
+    filearchives = get_filearchives(lol_path)
+    raf_archives = {}
+    rlsm_file = rlsm.RLSM(get_last_releasemanifest(lol_path))
+    files = rlsm_file.match_file(needle)
+    for i in files:
+        print('Extracted ' + i.path)
+        file_dir, file_name = os.path.split(i.path)
+        try:
+            os.makedirs(os.path.join(base_path, file_dir))
+        except:
+            pass
+        if not i.version in raf_archives:
+            if not i.version in filearchives:
+                print(f)
+                continue
+            raf_archives[i.version] = raf.Raf(filearchives[i.version])
+            raf_archives[i.version].read()
+        f = raf_archives[i.version].find_file(i.path)
+        raf_archives[i.version].data_file.extract_file(f.offset, f.size, os.path.join(base_path, i.path))
+
+    return 0
+
+def texture_patch(path):
+    patched_files = 0
+    for dirname, dirnames, filenames in os.walk(os.path.join(path, 'DATA')):
+        for filename in filenames:
+            file_path = os.path.join(dirname, filename)
+            data = open (file_path, 'rb+')
+            data.seek(28)
+            s = data.read(1)
+            c = s[0]
+            if c > 1 and filename[0].isdigit() and '_' in filename:
+                data.seek(28)
+                data.write(b'\x01')
+                data.close()
+                print('Patched ' + file_path)
+                patched_files += 1
+            else:
+                data.close()
+                os.remove(file_path)
+                print('Removed ' + file_path)
+
+    return patched_files
+
 print('League of Legends - Linux Tools')
 
 # Checking for LoL dir
@@ -203,9 +249,15 @@ if len(sys.argv) < 2:
     print_usage()
 
 if sys.argv[1] == 'texture_patch':
-    data_url = 'http://www.darkwind.it/misc/DATA.tar.gz'
-    data_file = download_file(data_url)
-    tarfile.open(data_file).extractall(os.path.join(tmp_dir, 'texture_patch'))
+    #data_url = 'http://www.darkwind.it/misc/DATA.tar.gz'
+    #data_file = download_file(data_url)
+    #tarfile.open(data_file).extractall(os.path.join(tmp_dir, 'texture_patch'))
+    extract('temp/texture_patch', 'Spells/Icons2D')
+    extract('temp/texture_patch', 'Items/Icons2D')
+    patched_files = texture_patch(os.path.join(tmp_dir, 'texture_patch'))
+    if patched_files == 0:
+        print('No patch needed!')
+        exit(1)
     rlsm_file = rlsm.RLSM(get_last_releasemanifest(lol_path))
     filearchives = get_filearchives(lol_path)
     apply_patch(os.path.join(tmp_dir, 'texture_patch'), rlsm_file, filearchives)
@@ -213,8 +265,11 @@ elif sys.argv[1] == 'repair':
     rlsm_file = rlsm.RLSM(get_last_releasemanifest(lol_path))
     filearchives = get_filearchives(lol_path)
     print('Checking Files...')
-    check_md5(rlsm_file, filearchives)
-    print('Archive repair not yet implemented.')
+    bad_files = check_md5(rlsm_file, filearchives)
+    if not bad_files:
+        print('Check successful')
+    else:
+        print('Archive repair not yet implemented.')
 elif sys.argv[1] == 'search':
     if len(sys.argv) != 3:
         print_usage()
@@ -222,6 +277,24 @@ elif sys.argv[1] == 'search':
     files = rlsm_file.match_file(sys.argv[2])
     for i in files:
         print(i)
+elif sys.argv[1] == 'extract':
+    if len(sys.argv) != 3:
+        print_usage()
+    base_path = 'extract'
+    extract(base_path, sys.argv[2])
+elif sys.argv[1] == 'unpack':
+    if len(sys.argv) != 3:
+        print_usage()
+    filearchives = get_filearchives(lol_path)
+    raf_file = None
+    try:
+        raf_file = raf.Raf(filearchives[int(sys.argv[2])])
+    except:
+        print("Archive file not found.")
+        exit(1)
+    raf_file.read()
+    raf_file.unpack(os.path.join(tmp_dir, "unpack"))
+
 elif sys.argv[1] == 'info':
     print("Not Yet Implemented")
 else:
