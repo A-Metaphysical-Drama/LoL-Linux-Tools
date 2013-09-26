@@ -19,6 +19,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 import os
 import re
 import sys
+import struct
 import shutil
 import tarfile
 import hashlib
@@ -221,8 +222,7 @@ def texture_patch(path):
             file_path = os.path.join(dirname, filename)
             data = open (file_path, 'rb+')
             data.seek(28)
-            s = data.read(1)
-            c = s[0]
+            c = struct.unpack(b'B', data.read(1))[0]
             if c > 1 and filename[0].isdigit() and '_' in filename:
                 data.seek(28)
                 data.write(b'\x01')
