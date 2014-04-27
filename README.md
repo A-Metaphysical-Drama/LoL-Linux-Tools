@@ -1,3 +1,5 @@
+# Warning: This project is discontinued since patching wine is a better solution. You can patch it with this hack: http://pastebin.com/xSNJjkMY
+
 League of Legends Linux Tools
 ===============
 
