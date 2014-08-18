@@ -1,4 +1,4 @@
-# Warning: This project is discontinued since patching wine is a better solution. You can patch it with this hack: http://pastebin.com/xSNJjkMY
+# Warning: This project is discontinued since patching wine is a better solution. You can patch it with this hack: http://pastebin.com/Nqj1f0z0
 
 League of Legends Linux Tools
 ===============
