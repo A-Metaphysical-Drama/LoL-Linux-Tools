@@ -253,7 +253,10 @@ if sys.argv[1] == 'texture_patch':
     #data_file = download_file(data_url)
     #tarfile.open(data_file).extractall(os.path.join(tmp_dir, 'texture_patch'))
     extract('temp/texture_patch', 'Spells/Icons2D')
-    extract('temp/texture_patch', 'Items/Icons2D')
+    try:
+        extract('temp/texture_patch', 'Items/Icons2D')
+    except:
+        print('Skipping 257, some icons maybe won\'t be shown')
     patched_files = texture_patch(os.path.join(tmp_dir, 'texture_patch'))
     if patched_files == 0:
         print('No patch needed!')
