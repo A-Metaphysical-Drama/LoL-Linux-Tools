@@ -1,4 +1,4 @@
-# Warning: This project is discontinued since patching wine is a better solution. You can patch it with this hack: http://pastebin.com/Nqj1f0z0
+# Warning: This project is discontinued - A better solution is editing the game.cfg config file adding the line x3d_platform=1 in the [General] section
 
 League of Legends Linux Tools
 ===============
