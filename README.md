@@ -1,4 +1,4 @@
-# Warning: This project is discontinued - A better solution is editing the game.cfg config file adding the line x3d_platform=1 in the [General] section
+# Warning: This project is discontinued - More infos on how to run LoL can be found here http://metaphysical.zz.vc/league-of-legends/lol-on-linux-the-three-ways/
 
 League of Legends Linux Tools
 ===============
