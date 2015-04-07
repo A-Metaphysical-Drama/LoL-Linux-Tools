@@ -1,4 +1,4 @@
-# Warning: This project is discontinued - More infos on how to run LoL can be found here http://metaphysical.zz.vc/league-of-legends/lol-on-linux-the-three-ways/
+# Warning: This project is discontinued - More infos on how to run LoL can be found here http://metaphysical.zz.mu/league-of-legends/lol-on-linux-the-three-ways/
 
 League of Legends Linux Tools
 ===============
